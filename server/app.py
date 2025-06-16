@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, make_response, jsonify
+from flask import Flask, make_response, jsonify, abort
 from flask_migrate import Migrate
 
 from models import db, Bakery, BakedGood
@@ -25,7 +25,9 @@ def bakeries():
 
 @app.route('/bakeries/<int:id>')
 def bakery_by_id(id):
-    bakery = Bakery.query.get_or_404(id)
+    bakery = db.session.get(Bakery, id)
+    if not bakery:
+        abort(404)
     bakery_dict = bakery.to_dict()
     bakery_dict["baked_goods"] = [bg.to_dict() for bg in bakery.baked_goods]
     return make_response(jsonify(bakery_dict), 200)
@@ -43,4 +45,5 @@ def most_expensive_baked_good():
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
 
